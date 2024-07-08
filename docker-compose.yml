@@ -6,8 +6,7 @@ services:
     build: .
     command: ["uvicorn", "--factory", "os2mo_fkk.app:create_app", "--host", "0.0.0.0", "--reload"]
     environment:
-      LOG_LEVEL: "DEBUG"
-
+      LOG_LEVEL: "INFO"
       # OS2mo
       FASTRAMQPI__MO_URL: "http://mo:5000"
       FASTRAMQPI__CLIENT_ID: "dipex"
@@ -15,11 +14,34 @@ services:
       FASTRAMQPI__AUTH_SERVER: "http://keycloak:8080/auth"
       FASTRAMQPI__AUTH_REALM: "mo"
       FASTRAMQPI__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
-
+      # Database
+      FASTRAMQPI__DATABASE__USER: "fastramqpi"
+      FASTRAMQPI__DATABASE__PASSWORD: "fastramqpi"
+      FASTRAMQPI__DATABASE__HOST: "db"
+      FASTRAMQPI__DATABASE__NAME: "fastramqpi"
+      # BEGIN SYNCHRONISED WITH GITLAB CI
       # FKK
-      # TODO
+      FKK__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
+      FKK__ENVIRONMENT: "test"
+      # Only fetch klasser under ' Kommunens administrative systemer', otherwise
+      # it takes forever to manually test.
+      FKK__CHANGED_UUIDS_USER_KEY_FILTER: "85*"
+      # END SYNCHRONISED WITH GITLAB CI
     volumes:
-      - ./:/app/:ro
+      - ./data:/data
+      - ./dev-environment/cert.pem:/config/cert.pem:ro
+      - ./os2mo_fkk/:/app/os2mo_fkk/:ro
+      - ./tests/:/app/tests/:ro
+    tmpfs:
+      - /app/.pytest_cache/
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: "fastramqpi"
+      POSTGRES_PASSWORD: "fastramqpi"
+      POSTGRES_DB: "fastramqpi"
+
 
 networks:
   default:

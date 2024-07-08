@@ -46,8 +46,9 @@ include:
       - gitlab-ci-templates/common/conventional-commits-changelog.v1.yml
       - gitlab-ci-templates/common/docker-build.v1.yml
       - gitlab-ci-templates/common/docker-release.v1.yml
-      # TODO
+      # TODO #60638
       # - gitlab-ci-templates/common/config-updater-salt.v1.yml
+      # TODO #60639
       # - gitlab-ci-templates/common/config-updater-flux.v1.yml
   - project: labs/salt-automation
     file:
@@ -75,11 +76,16 @@ workflow:
 Test:
   variables:
     PYTEST_ADDOPTS: "-m 'not integration_test'"
-  rules:
-    - <<: *if-merge-request
 
 Integration-test:
   extends:
     - .integration-test:mo
   rules:
     - <<: *if-merge-request
+  variables:
+    # BEGIN SYNCHRONISED WITH COMPOSE
+    FKK__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
+    FKK__ENVIRONMENT: "test"
+    FKK__CHANGED_UUIDS_USER_KEY_FILTER: "85*"
+    # END SYNCHRONISED WITH COMPOSE
+    FKK__CERTIFICATE: "/builds/$CI_PROJECT_PATH/dev-environment/cert.pem"
