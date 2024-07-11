@@ -1,93 +1,154 @@
-# OS2mo-FKK
+<!--
+SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
+SPDX-License-Identifier: MPL-2.0
+-->
 
-OS2mo integration for Fælleskommunalt Klassifikationssystem (FKK)
+# OS2mo: Fælleskommunalt Klassifikationssystem (FKK)
+OS2mo integration for [FKK](https://digitaliseringskataloget.dk/l%C3%B8sninger/klassifikation).
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://git.magenta.dk/rammearkitektur/OS2mo-FKK.git
-git branch -M master
-git push -uf origin master
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://git.magenta.dk/rammearkitektur/OS2mo-FKK/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```
+docker-compose up -d
+```
+Configuration is done through environment variables. Available options can be
+seen in [os2mo_fkk/config.py]. Complex variables such as dict or lists can
+be given as JSON strings, as specified by Pydantic's settings parser.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## Fælleskommunalt Klassifikationssystem (FKK)
+Most of the documentation for Fælleskommunalt Klassifikationssystem (FKK) and
+its supporting services can only be found by downloading zip-files with PDFs.
+The main upstream documentation is at
+https://digitaliseringskataloget.dk/l%C3%B8sninger/klassifikation/bliv-klar-til-at-kode,
+from where most of the required reading is linked.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+### MitID Erhverv: Authorization
+Access to the FKK SOAP endpoints requires 2-way TLS with client certificates.
+These certificates are issued on MitID Erhverv:
+https://erhvervsadministration.nemlog-in.dk/.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+To issue certificates for Magenta Aps, you must be granted the
+`Brugeradministrator` role by another user with the
+`Organisationsadministrator` role.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+In addition to roles, your user also has a set of rights assigned. A MitID
+Erhverv user with the `Rettighedsadministrator` role can grant these. To access
+the administration module, used to manage service agreements, you need the
+following rights:
+  - `KOMBIT STS Administrationsmodulet (test) Aftaleadministrator`.
+  - `KOMBIT STS Administrationsmodulet (test) Leverandøradministrator`.
+  - `KOMBIT STS Administrationsmodulet Leverandøradministrator`.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+We additionally grant the `Aftaleadministrator` on test since we act as a
+government agency to approve our own service agreements (which are managed by
+the `Leverandøradministrator`).
+
+To access the FKK web interface, you need the following rights:
+  - `Fælleskommunalt Klassifikationssystem (test) – Læs`.
+  - `Fælleskommunalt Klassifikationssystem - Læs`.
+
+The FKK web interface is available at:
+  - https://klassifikation.eksterntest-stoettesystemerne.dk/sts-rest-klassifikation
+  - https://klassifikation.stoettesystemerne.dk/sts-rest-klassifikation
+
+### MitID Erhverv: Certificates
+NOTE: According to https://digitaliseringskataloget.dk/teknik/certifikater, the
+same certificate MUST NOT be used to connect to both the test and production
+environment - we must order dedicated certificates for each (environment,
+integration)-tuple.
+
+Go to https://erhvervsadministration.nemlog-in.dk/certificates and configure
+the new certificate as follows:
+  - SE number: `25052943`.
+  - Certificate name: `<prod|test>_os2mo_<customer>_fkk`, e.g. `prod_os2mo_viborg_fkk`.
+  - Certificate type: `OCES system certificate`.
+  - Identification method: `User login`.
+  - Select if you want to go directly to issuing the new certificate: `[X]`.
+  - Issuing methods: `Internet browser`.
+
+Download the generated certificate and convert it to a proper format without
+password protection (we will encrypt it in git):
+```sh
+openssl pkcs12 -in prod_os2mo_viborg_fkk.p12 -out prod_os2mo_viborg_fkk.pem -noenc
+```
+Additionally, the public key will need to be uploaded to the Administration
+Module. The certificate can be saved without the private key using:
+```sh
+openssl x509 -in prod_os2mo_viborg_fkk.pem -out prod_os2mo_viborg_fkk.crt -clcerts -nokeys
+```
+
+### Administration Module
+To call FKK, we must first create and it-system and set up a service agreement
+between Magenta and the government authority (e.g. municipality) we wish to
+fetch data for. This is done in "Fælleskommunalt Administrationsmodul",
+documented here:
+https://digitaliseringskataloget.dk/l%C3%B8sninger/administrationsmodul.
+
+The administration module can be accessed on:
+  - https://exttestwww.serviceplatformen.dk/administration/
+  - https://www.serviceplatformen.dk/administration/
+
+First, create the it-system under "It-systemer":
+  - Navn: `prod_os2mo_viborg_fkk`.
+  - Type: `Anvendersystem`.
+
+Go to the "Anvendersystem" tab and upload the public certificate from MitID
+Erhvervsadministration (`prod_os2mo_viborg_fkk.crt` in the example). Note that this
+may require Chromium and/or a desktop environment to drag-and-drop the
+certificate.
+
+Unlike the certificate and IT-system so far, the service agreements MAY BE
+specific to each service we need to call. As an example, one OS2mo instance
+could be integrating against both FKK and FK-org, with the same, or two
+different, service agreements. Service agreements CANNOT be edited once they
+have been approved by the customer, so adding a new service to the agreement
+requires copying it (using the button in the interface). It is probably easier
+to create a service agreement per service.
+
+Go to "Serviceaftaler" and request a new service agreement:
+  - Serviceaftaletype: `Uden videregivelse af data`.
+  - Navn: `prod_os2mo_viborg_fkk`.
+  - Begrundelse: `Synkronisering fra FKK til OS2mo`.
+  - System: <the OS2mo system for the customer>.
+  - Myndigheder: The customer government authority. Use `MAGENTA ApS` in
+    testing to allow approving the agreement yourself.
+  - Services:
+    - `Klassifikation 7`.
+  - Parametre:
+    - `Klassifikation 7`: `udstil`.
+
+Magenta is registered as a "Testmyndighed" in the TEST system, allowing us to
+request and approve a service agreement with ourselves, which we can approve as
+if we were a government authority.
+
+### SOAP
+WSDLs are available at:
+  - https://klassifikation.eksterntest-stoettesystemerne.dk/klassifikation/7?wsdl
+
+These can be imported into programs such as [SoapUI](https://en.wikipedia.org/wiki/SoapUI).
+
+## Development
+The development environment contains a certificate for FKK. This certificate is
+intentionally public to allow CI tests and ease of development.
+```bash
+docker compose up -d --build
+```
+
+
+## Versioning
+This project uses [Semantic Versioning](https://semver.org/) with the following
+strategy:
+- MAJOR: Incompatible API changes.
+- MINOR: Backwards-compatible updates and functionality.
+- PATCH: Backwards-compatible bug fixes.
+
+
+## Authors
+Magenta ApS <https://magenta.dk>
+
 
 ## License
-For open source projects, say how it is licensed.
+- This project: [MPL-2.0](LICENSES/MPL-2.0.txt)
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+This project uses [REUSE](https://reuse.software) for licensing. All licenses can be found in the [LICENSES folder](LICENSES/) of the project.

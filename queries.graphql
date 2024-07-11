@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
+# SPDX-License-Identifier: MPL-2.0
+
+query get_facet($user_key: String!) {
+  facets(filter: { user_keys: [$user_key] }) {
+    objects {
+      uuid
+    }
+  }
+}
+
+query get_class($uuid: UUID!) {
+  classes(filter: { uuids: [$uuid], from_date: null, to_date: null }) {
+    objects {
+      validities(start: null, end: null) {
+        validity {
+          from
+          to
+        }
+        facet_uuid
+        uuid
+        user_key
+        name
+        parent_uuid
+      }
+    }
+  }
+}
+
+mutation create_class($input: ClassCreateInput!) {
+  class_create(input: $input) {
+    uuid
+  }
+}
+
+mutation update_class($input: ClassUpdateInput!) {
+  class_update(input: $input) {
+    uuid
+  }
+}
+
+mutation truncate_class($uuid: UUID!) {
+  class_terminate(
+    # MO will add and remove a day from the provided dates, so we cannot use
+    # true datetime.{min,max}.
+    input: { uuid: $uuid, from: "0001-01-02", to: "9999-12-30" }
+  ) {
+    uuid
+  }
+}
+
+mutation delete_class($uuid: UUID!) {
+  class_delete(uuid: $uuid) {
+    uuid
+  }
+}
