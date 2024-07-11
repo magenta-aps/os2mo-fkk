@@ -42,17 +42,13 @@ include:
   - project: labs/salt-automation
     file:
       - gitlab-ci-templates/common/no-interrupt-meta.v1.yml
+      - gitlab-ci-templates/common/pre-commit.v1.yml
       - gitlab-ci-templates/common/conventional-commits.v1.yml
       - gitlab-ci-templates/common/conventional-commits-changelog.v1.yml
       - gitlab-ci-templates/common/docker-build.v1.yml
       - gitlab-ci-templates/common/docker-release.v1.yml
-      # TODO #60638
-      # - gitlab-ci-templates/common/config-updater-salt.v1.yml
-      # TODO #60639
-      # - gitlab-ci-templates/common/config-updater-flux.v1.yml
-  - project: labs/salt-automation
-    file:
-      - gitlab-ci-templates/common/pre-commit.v1.yml
+      - gitlab-ci-templates/common/config-updater-flux.v1.yml
+      - gitlab-ci-templates/common/config-updater-salt.v1.yml
   - project: labs/salt-automation
     file:
       - gitlab-ci-templates/python/pytest.v1.yml
