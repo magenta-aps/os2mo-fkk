@@ -26,6 +26,8 @@ variables:
   POETRY_VERSION: "1.8"
   PRECOMMIT_USE_POETRY: "true"
 
+  OS2MO_INIT_CONFIG: "/builds/$CI_PROJECT_PATH/init.config.yml"
+
 
 # Global Conditions
 .if-default-branch-refs: &if-default-branch-refs

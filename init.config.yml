@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
+# SPDX-License-Identifier: MPL-2.0
+---
+root_organisation:
+  municipality_code: null
+
+facets:
+  kle_aspect:
+    Ansvarlig:
+      title: "Ansvarlig"
+      scope: "ANSVARLIG"
+    # NOTE: Today, the term "Informeret" is used instead of "Indsigt", but
+    # historically KOMBIT, and therefore OS2mo, has used the term "Indsigt".
+    # We keep the historic 'Indsigt' user key but rename its title to the newer
+    # 'Informeret'.
+    # https://digitaliseringskataloget.dk/files/integration-files/110520211231/SF1500%20Anvisninger%20-%20v2.0%20-%20v6.0%20Services%2020210511.pdf
+    # https://git.magenta.dk/rammearkitektur/os2mo-data-import-and-export/-/blob/a78ce927f12f7aa327b502143207346906dd0d68/integrations/kle/kle_import_export.py#L21-32
+    Indsigt:
+      title: "Informeret"
+      scope: "INFORMERET"
+    Udførende:
+      title: "Udførende"
+      scope: "UDFOERENDE"

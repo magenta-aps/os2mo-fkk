@@ -2,6 +2,20 @@
 # SPDX-License-Identifier: MPL-2.0
 ---
 services:
+  init:
+    image: magentaaps/os2mo-init:4
+    environment:
+      MO_URL: "http://mo:5000"
+      AUTH_SERVER: "http://keycloak:8080/auth"
+      AUTH_REALM: "mo"
+      CLIENT_ID: "dipex"
+      CLIENT_SECRET: "603f1c82-d012-4d04-9382-dbe659c533fb"
+    volumes:
+      - type: bind
+        source: ./init.config.yml
+        target: /config/config.yml
+        read_only: true
+
   fkk:
     build: .
     command: ["uvicorn", "--factory", "os2mo_fkk.app:create_app", "--host", "0.0.0.0", "--reload"]
