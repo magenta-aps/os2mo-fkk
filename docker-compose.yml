@@ -28,7 +28,6 @@ services:
       FKK__CHANGED_UUIDS_USER_KEY_FILTER: "85*"
       # END SYNCHRONISED WITH GITLAB CI
     volumes:
-      - ./data:/data
       - ./dev-environment/cert.pem:/config/cert.pem:ro
       - ./os2mo_fkk/:/app/os2mo_fkk/:ro
       - ./tests/:/app/tests/:ro
