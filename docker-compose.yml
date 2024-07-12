@@ -2,6 +2,20 @@
 # SPDX-License-Identifier: MPL-2.0
 ---
 services:
+  init:
+    image: magentaaps/os2mo-init:4
+    environment:
+      MO_URL: "http://mo:5000"
+      AUTH_SERVER: "http://keycloak:8080/auth"
+      AUTH_REALM: "mo"
+      CLIENT_ID: "dipex"
+      CLIENT_SECRET: "603f1c82-d012-4d04-9382-dbe659c533fb"
+    volumes:
+      - type: bind
+        source: ./init.config.yml
+        target: /config/config.yml
+        read_only: true
+
   fkk:
     build: .
     command: ["uvicorn", "--factory", "os2mo_fkk.app:create_app", "--host", "0.0.0.0", "--reload"]
@@ -19,16 +33,21 @@ services:
       FASTRAMQPI__DATABASE__PASSWORD: "fastramqpi"
       FASTRAMQPI__DATABASE__HOST: "db"
       FASTRAMQPI__DATABASE__NAME: "fastramqpi"
-      # BEGIN SYNCHRONISED WITH GITLAB CI
       # FKK
+      # BEGIN SYNCHRONISED WITH GITLAB CI
       FKK__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
       FKK__ENVIRONMENT: "test"
       # Only fetch klasser under ' Kommunens administrative systemer', otherwise
       # it takes forever to manually test.
       FKK__CHANGED_UUIDS_USER_KEY_FILTER: "85*"
+      # Use mounted dev-environment certificate ('test_os2mo_dev_fkk' in MitID
+      # Erhvervsadministration) for the 'test_os2mo_dev_fkk' exttest IT system.
+      FKK__CERTIFICATE: "/config/cert.pem"
+      # Use service agreement (serviceaftale) 'test_os2mo_dev_fkk' which is accepted by
+      # the Magenta Aps "Testmyndighed" with CVR 25052943.
+      FKK__AUTHORITY_CONTEXT_CVR: "25052943"
       # END SYNCHRONISED WITH GITLAB CI
     volumes:
-      - ./data:/data
       - ./dev-environment/cert.pem:/config/cert.pem:ro
       - ./os2mo_fkk/:/app/os2mo_fkk/:ro
       - ./tests/:/app/tests/:ro

@@ -98,14 +98,6 @@ Erhvervsadministration (`prod_os2mo_viborg_fkk.crt` in the example). Note that t
 may require Chromium and/or a desktop environment to drag-and-drop the
 certificate.
 
-Unlike the certificate and IT-system so far, the service agreements MAY BE
-specific to each service we need to call. As an example, one OS2mo instance
-could be integrating against both FKK and FK-org, with the same, or two
-different, service agreements. Service agreements CANNOT be edited once they
-have been approved by the customer, so adding a new service to the agreement
-requires copying it (using the button in the interface). It is probably easier
-to create a service agreement per service.
-
 Go to "Serviceaftaler" and request a new service agreement:
   - Serviceaftaletype: `Uden videregivelse af data`.
   - Navn: `prod_os2mo_viborg_fkk`.
@@ -117,10 +109,18 @@ Go to "Serviceaftaler" and request a new service agreement:
     - `Klassifikation 7`.
   - Parametre:
     - `Klassifikation 7`: `udstil`.
+  - Godkend:
+    - Datamodtager(e): **NOTE THIS CVR NUMBER**, it is needed for
+      `FKK__AUTHORITY_CONTEXT_CVR`.
+
+Service agreements CANNOT be edited once they have been approved by the
+customer, so adding a new service to the agreement requires copying it (using
+the button in the interface).
 
 Magenta is registered as a "Testmyndighed" in the TEST system, allowing us to
 request and approve a service agreement with ourselves, which we can approve as
-if we were a government authority.
+if we were a government authority. Otherwise, you need to send an email to the
+customer to get the service agreement accepted.
 
 ### SOAP
 WSDLs are available at:
@@ -130,7 +130,7 @@ These can be imported into programs such as [SoapUI](https://en.wikipedia.org/wi
 
 ## Development
 The development environment contains a certificate for FKK. This certificate is
-intentionally public to allow CI tests and ease of development.
+intentionally public to allow for CI tests and ease of development.
 ```bash
 docker compose up -d --build
 ```

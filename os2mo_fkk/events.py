@@ -79,8 +79,8 @@ async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> None:
         # is not under the kle_number facet. This allows us to clean-up deleted
         # FKK classes in all cases except if someone manually moves it to a
         # different facet between events after it was deleted from FKK.
-        mo_class_facet = only(validity.facet_uuid for validity in mo_class.validities)
-        if mo_class_facet != kle_number_facet:
+        mo_class_facets = {validity.facet_uuid for validity in mo_class.validities}
+        if mo_class_facets != {kle_number_facet}:
             log.info("MO class is not KLE: won't delete")
             return
         log.info("Deleting class from MO")

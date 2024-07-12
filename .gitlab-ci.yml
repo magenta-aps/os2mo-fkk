@@ -26,6 +26,8 @@ variables:
   POETRY_VERSION: "1.8"
   PRECOMMIT_USE_POETRY: "true"
 
+  OS2MO_INIT_CONFIG: "/builds/$CI_PROJECT_PATH/init.config.yml"
+
 
 # Global Conditions
 .if-default-branch-refs: &if-default-branch-refs
@@ -42,17 +44,13 @@ include:
   - project: labs/salt-automation
     file:
       - gitlab-ci-templates/common/no-interrupt-meta.v1.yml
+      - gitlab-ci-templates/common/pre-commit.v1.yml
       - gitlab-ci-templates/common/conventional-commits.v1.yml
       - gitlab-ci-templates/common/conventional-commits-changelog.v1.yml
       - gitlab-ci-templates/common/docker-build.v1.yml
       - gitlab-ci-templates/common/docker-release.v1.yml
-      # TODO #60638
-      # - gitlab-ci-templates/common/config-updater-salt.v1.yml
-      # TODO #60639
-      # - gitlab-ci-templates/common/config-updater-flux.v1.yml
-  - project: labs/salt-automation
-    file:
-      - gitlab-ci-templates/common/pre-commit.v1.yml
+      - gitlab-ci-templates/common/config-updater-flux.v1.yml
+      - gitlab-ci-templates/common/config-updater-salt.v1.yml
   - project: labs/salt-automation
     file:
       - gitlab-ci-templates/python/pytest.v1.yml
@@ -87,5 +85,6 @@ Integration-test:
     FKK__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
     FKK__ENVIRONMENT: "test"
     FKK__CHANGED_UUIDS_USER_KEY_FILTER: "85*"
-    # END SYNCHRONISED WITH COMPOSE
     FKK__CERTIFICATE: "/builds/$CI_PROJECT_PATH/dev-environment/cert.pem"
+    FKK__AUTHORITY_CONTEXT_CVR: "25052943"
+    # END SYNCHRONISED WITH COMPOSE
