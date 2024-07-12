@@ -37,9 +37,14 @@ class FKKSettings(BaseModel):
     # Use FKK exttest or production environment
     environment: Literal["production", "test"] = "production"
 
-    # See the README for how the certificate should be obtained
+    # The certificate is used to obtain tokens, sign XML, and mutual TLS. See the
+    # README for further information.
     certificate: FilePath = Path("/config/cert.pem")
-    certificate_cvr: str = "25052943"  # Magenta Aps
+
+    # The authority context determines which authority (myndighed) we are receiving
+    # data for, i.e. which service agreement (serviceaftale) to use. See the README for
+    # further information.
+    authority_context_cvr: str
 
     # How often should we check FKK for new klasser?
     interval: int = 1800  # seconds

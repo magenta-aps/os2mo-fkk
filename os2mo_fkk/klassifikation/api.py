@@ -186,7 +186,7 @@ class FKKAPI(AsyncContextManager):
         ).text = self.cert_base64
         _find(
             envelope, "{*}Body/{*}RequestSecurityToken/{*}Claims/{*}ClaimType/{*}Value"
-        ).text = self.settings.certificate_cvr
+        ).text = self.settings.authority_context_cvr
         _find(
             envelope, "{*}Body/{*}RequestSecurityToken/{*}UseKey/{*}BinarySecurityToken"
         ).text = self.cert_base64
