@@ -1,13 +1,14 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
+from datetime import datetime
+from datetime import timedelta
+from pathlib import Path
+
 import pytest
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from datetime import datetime
-from datetime import timedelta
-from pathlib import Path
 from pydantic.v1 import ValidationError
 from pytest import MonkeyPatch
 

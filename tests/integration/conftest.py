@@ -1,10 +1,11 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 
+from collections.abc import AsyncIterator
+
 import pytest
 from asgi_lifespan import LifespanManager
 from asgi_lifespan._types import ASGIApp
-from collections.abc import AsyncIterator
 from fastapi import FastAPI
 from gql.client import AsyncClientSession
 from httpx import ASGITransport

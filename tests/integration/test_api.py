@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
+from unittest.mock import ANY
+
 import pytest
 from httpx import AsyncClient
-from unittest.mock import ANY
 
 
 @pytest.mark.integration_test

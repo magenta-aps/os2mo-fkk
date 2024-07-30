@@ -3,9 +3,10 @@
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
-from lxml import etree
 from uuid import UUID
 from uuid import uuid4
+
+from lxml import etree
 
 from os2mo_fkk.klassifikation.models import Egenskab
 from os2mo_fkk.klassifikation.models import Klasse

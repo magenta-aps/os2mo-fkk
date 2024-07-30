@@ -1,23 +1,22 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 import asyncio
-from asyncio import Task
-
 from asyncio import CancelledError
-
-import structlog
+from asyncio import Task
 from datetime import UTC
 from datetime import datetime
+from typing import AsyncContextManager
+from typing import Self
+
+import structlog
 from fastramqpi.ra_utils.asyncio_utils import gather_with_concurrency
+from fastramqpi.ramqp import AMQPSystem
 from sqlalchemy import DateTime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
-from typing import AsyncContextManager
-from typing import Self
-from fastramqpi.ramqp import AMQPSystem
 
 from os2mo_fkk.config import FKKSettings
 from os2mo_fkk.database import Base

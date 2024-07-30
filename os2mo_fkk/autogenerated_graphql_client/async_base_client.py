@@ -2,29 +2,38 @@
 
 import enum
 import json
-from typing import IO, Any, AsyncIterator, Dict, List, Optional, Tuple, TypeVar, cast
+from typing import IO
+from typing import Any
+from typing import AsyncIterator
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import TypeVar
+from typing import cast
 from uuid import uuid4
 
 import httpx
 from pydantic import BaseModel
 from pydantic_core import to_jsonable_python
 
-from .base_model import UNSET, Upload
-from .exceptions import (
-    GraphQLClientGraphQLMultiError,
-    GraphQLClientHttpError,
-    GraphQLClientInvalidMessageFormat,
-    GraphQLClientInvalidResponseError,
-)
+from .base_model import UNSET
+from .base_model import Upload
+from .exceptions import GraphQLClientGraphQLMultiError
+from .exceptions import GraphQLClientHttpError
+from .exceptions import GraphQLClientInvalidMessageFormat
+from .exceptions import GraphQLClientInvalidResponseError
 
 try:
     from websockets.client import (  # type: ignore[import-not-found,unused-ignore]
         WebSocketClientProtocol,
+    )
+    from websockets.client import (  # type: ignore[import-not-found,unused-ignore]
         connect as ws_connect,
     )
+    from websockets.typing import Data  # type: ignore[import-not-found,unused-ignore]
+    from websockets.typing import Origin  # type: ignore[import-not-found,unused-ignore]
     from websockets.typing import (  # type: ignore[import-not-found,unused-ignore]
-        Data,
-        Origin,
         Subprotocol,
     )
 except ImportError:

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from datetime import UTC
 from datetime import datetime
+
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
