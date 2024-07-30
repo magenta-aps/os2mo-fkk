@@ -1,32 +1,32 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
-from itertools import count
-
 import base64
-import structlog
-from OpenSSL.crypto import X509
-from cryptography import x509
-from cryptography.hazmat.primitives.asymmetric.dsa import DSAPrivateKey
-from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
-from datetime import UTC
-from datetime import datetime, timedelta
-from cryptography.hazmat.primitives.serialization import Encoding
-import httpx
-import signxml
 from copy import deepcopy
-from lxml import etree
-from signxml import SignatureConstructionMethod
-from signxml import XMLSigner
+from datetime import UTC
+from datetime import datetime
+from datetime import timedelta
+from itertools import count
 from typing import AsyncContextManager
-
 from typing import Self
 from uuid import UUID
 from uuid import uuid4
 
+import httpx
+import signxml
+import structlog
+from cryptography import x509
+from cryptography.hazmat.primitives.asymmetric.dsa import DSAPrivateKey
+from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+from cryptography.hazmat.primitives.serialization import Encoding
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from lxml import etree
+
 # https://stackoverflow.com/questions/72226485/mypy-function-lxml-etree-elementtree-is-not-valid-as-a-type-but-why
 from lxml.etree import _Element as Element
+from OpenSSL.crypto import X509
+from signxml import SignatureConstructionMethod
+from signxml import XMLSigner
 
 from os2mo_fkk.config import FKKSettings
 from os2mo_fkk.klassifikation.models import Klasse

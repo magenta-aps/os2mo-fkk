@@ -1,11 +1,12 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 
+from typing import Any
+
 from fastapi import FastAPI
 from fastramqpi.main import FastRAMQPI
 from fastramqpi.metrics import dipex_last_success_timestamp
 from fastramqpi.ramqp import AMQPSystem
-from typing import Any
 
 from os2mo_fkk import api
 from os2mo_fkk import events

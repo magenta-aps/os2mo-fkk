@@ -1,17 +1,18 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
+from uuid import UUID
+
 import structlog
 from fastapi import APIRouter
+from fastapi import Response
 from lxml import etree
 from more_itertools import one
-from uuid import UUID
 
 from os2mo_fkk import depends
 from os2mo_fkk.events import sync
 from os2mo_fkk.klassifikation.models import Klasse as FKKKlasse
 from os2mo_fkk.models import ClassValidity
 from os2mo_fkk.models import fkk_klasse_to_class_validities
-from fastapi import Response
 
 router = APIRouter()
 logger = structlog.stdlib.get_logger()

@@ -1,17 +1,18 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
-import structlog
-from cryptography import x509
 from datetime import UTC
 from datetime import datetime
-from fastramqpi.config import Settings as _FastRAMQPISettings
 from pathlib import Path
+from typing import Literal
+
+import structlog
+from cryptography import x509
+from fastramqpi.config import Settings as _FastRAMQPISettings
+from fastramqpi.ramqp.config import AMQPConnectionSettings
 from pydantic.v1 import BaseModel
 from pydantic.v1 import BaseSettings
 from pydantic.v1 import FilePath
 from pydantic.v1 import validator
-from typing import Literal
-from fastramqpi.ramqp.config import AMQPConnectionSettings
 
 logger = structlog.stdlib.get_logger()
 

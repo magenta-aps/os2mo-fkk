@@ -1,10 +1,11 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 # mypy: disable-error-code="no-redef"
-import pytest
 import re
 from datetime import UTC
 from datetime import datetime
+
+import pytest
 from fastramqpi.pytest_util import retry
 from httpx import AsyncClient
 from tenacity import stop_after_delay
