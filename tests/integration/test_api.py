@@ -32,7 +32,7 @@ async def test_read_parsed(test_client: AsyncClient) -> None:
             {
                 "virkning": {
                     "fra": "1988-01-01T00:00:00+01:00",
-                    "til": "9999-12-31T23:59:59.999999Z",
+                    "til": "9999-12-31T23:59:59.999999+00:00",
                 },
                 "brugervendtnoegle": "85.15.02",
                 "titel": "IT-sikkerhed og sikkerhedsforanstaltninger",
@@ -42,7 +42,7 @@ async def test_read_parsed(test_client: AsyncClient) -> None:
             {
                 "virkning": {
                     "fra": "1988-01-01T00:00:00+01:00",
-                    "til": "9999-12-31T23:59:59.999999Z",
+                    "til": "9999-12-31T23:59:59.999999+00:00",
                 },
                 "er_publiceret": True,
             }
@@ -51,7 +51,7 @@ async def test_read_parsed(test_client: AsyncClient) -> None:
             {
                 "virkning": {
                     "fra": "1988-01-01T00:00:00+01:00",
-                    "til": "9999-12-31T23:59:59.999999Z",
+                    "til": "9999-12-31T23:59:59.999999+00:00",
                 },
                 "uuid": "8f847ae9-cc68-414a-81b3-6444b46d8480",
             }
