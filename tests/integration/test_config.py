@@ -9,7 +9,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from pydantic.v1 import ValidationError
+from pydantic import ValidationError
 from pytest import MonkeyPatch
 
 from os2mo_fkk.config import Settings

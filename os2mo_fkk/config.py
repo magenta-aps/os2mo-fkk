@@ -9,10 +9,10 @@ import structlog
 from cryptography import x509
 from fastramqpi.config import Settings as _FastRAMQPISettings
 from fastramqpi.ramqp.config import AMQPConnectionSettings
-from pydantic.v1 import BaseModel
-from pydantic.v1 import BaseSettings
-from pydantic.v1 import FilePath
-from pydantic.v1 import validator
+from pydantic import BaseModel
+from pydantic import BaseSettings
+from pydantic import FilePath
+from pydantic import validator
 
 logger = structlog.stdlib.get_logger()
 
