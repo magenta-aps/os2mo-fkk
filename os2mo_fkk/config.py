@@ -21,11 +21,17 @@ class MOAMQPConnectionSettings(AMQPConnectionSettings):
     exchange = "os2mo_fkk"
     queue_prefix = "os2mo_fkk"
     upstream_exchange = "os2mo"
+    # The FKK API seems to be hosted on a spare Raspberry Pi Zero they also
+    # use to mine bitcoins.
+    prefetch_count = 1
 
 
 class FKKAMQPConnectionSettings(AMQPConnectionSettings):
     exchange = "fkk"
     queue_prefix = "fkk"
+    # The FKK API seems to be hosted on a spare Raspberry Pi Zero they also
+    # use to mine bitcoins.
+    prefetch_count = 1
 
 
 class FastRAMQPISettings(_FastRAMQPISettings):
