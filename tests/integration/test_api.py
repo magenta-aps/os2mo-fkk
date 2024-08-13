@@ -75,7 +75,10 @@ async def test_read_mo(test_client: AsyncClient) -> None:
     assert response.json() == [
         {
             "facet": ANY,
-            "validity": {"end": None, "start": "1988-01-01T00:00:00+01:00"},
+            "validity": {
+                "end": "9999-12-31T23:59:59.999999+00:00",
+                "start": "1988-01-01T00:00:00+01:00",
+            },
             "uuid": "0095665f-3685-498b-8ba7-2339d05a5bda",
             "user_key": "85.15.02",
             "name": "IT-sikkerhed og sikkerhedsforanstaltninger",

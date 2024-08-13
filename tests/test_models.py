@@ -563,7 +563,7 @@ def test_parsing() -> None:
             facet=facet_uuid,
             validity=Validity(
                 start=datetime(2047, 4, 4, 0, 0, tzinfo=TZ),
-                end=None,
+                end=POSITIVE_INFINITY,
             ),
             uuid=UUID("0095665f-3685-498b-8ba7-2339d05a5bda"),
             user_key="85.15.1984",
