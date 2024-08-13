@@ -140,14 +140,6 @@ def mo_class_read_to_class_validities(
 ) -> Iterator[ClassValidity]:
     """Convert MO GraphQL Class object to ClassValidity intermediate objects."""
     for validity in mo_class.validities:
-        # TODO (#61001): MOs GraphQL can return validities of zero length, i.e.
-        # validities with intervals where from == to. This should *DEFINITELY* be fixed
-        # in MO, but for now we just pretend such objects don't exist to avoid infinite
-        # loops, since truncating the class does not remove these phantom validities.
-        if validity.validity.from_ == validity.validity.to:  # pragma: no cover
-            logger.warning("Ignoring zero-length validity", validity=validity)
-            continue
-
         # TODO (#61435): MOs GraphQL subtracts one day from the validity end dates when
         # reading, compared to what was written. This breaks the comparison and leads
         # to infinite synchronisation loops.

@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
+from datetime import timedelta
 from uuid import UUID
 
 import structlog
@@ -59,6 +60,18 @@ async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> None:
         desired = set(
             fkk_klasse_to_class_validities(fkk_klasse, facet=kle_number_facet)
         )
+
+    # TODO(#61435): MO does not support objects with a validity less than a day
+    if desired:
+        single_day_desired = set(
+            d
+            for d in desired
+            if (d.validity.end - d.validity.start) <= timedelta(days=1)
+        )
+        logger.warning(
+            "Ignoring desired single-day class validities", ignored=single_day_desired
+        )
+        desired -= single_day_desired
 
     log.info("Synchronise", actual=actual, desired=desired)
 
