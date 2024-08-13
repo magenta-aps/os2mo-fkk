@@ -59,6 +59,7 @@ include:
     rules:
       - <<: *if-merge-request
   - project: rammearkitektur/os2mo
+    ref: ci/61647-allow-skipping-os2mo-init
     file:
       - gitlab-ci-templates/integration-test-meta.v1.yml
 
