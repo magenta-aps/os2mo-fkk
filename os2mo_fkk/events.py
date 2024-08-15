@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 from datetime import timedelta
+from enum import StrEnum
+from enum import auto
 from uuid import UUID
 
 import structlog
@@ -39,7 +41,14 @@ async def fkk_handler(
     await sync(uuid, mo, fkk)
 
 
-async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> None:
+class SyncStatus(StrEnum):
+    CREATE_OR_UPDATE = auto()
+    DELETE = auto()
+    UP_TO_DATE = auto()
+    WONT_DELETE = auto()
+
+
+async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> SyncStatus:
     """Synchronise FKK Klasse to MO."""
     log = logger.bind(uuid=uuid)
     log.info("Synchronising class")
@@ -79,7 +88,7 @@ async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> None:
     # systems *or* if it is missing (None) in both.
     if actual == desired:
         log.info("Actual state matches desired state: nothing to do")
-        return
+        return SyncStatus.UP_TO_DATE
 
     # The FKK klasse does not exist
     if not desired:
@@ -95,10 +104,10 @@ async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> None:
         mo_class_facets = {validity.facet_uuid for validity in mo_class.validities}
         if mo_class_facets != {kle_number_facet}:
             log.info("MO class is not KLE: won't delete")
-            return
+            return SyncStatus.WONT_DELETE
         log.info("Deleting class from MO")
         await mo.delete_class(uuid)
-        return
+        return SyncStatus.DELETE
 
     # The FKK klasse exists, and we have a set of desired intermediate
     # ClassValidity states we need to synchronise to MO. Each validity can be
@@ -122,3 +131,5 @@ async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> None:
     for validity in desired:
         update_input = class_validity_to_update_input(validity)
         await mo.update_class(update_input)
+
+    return SyncStatus.CREATE_OR_UPDATE

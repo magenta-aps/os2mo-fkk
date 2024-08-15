@@ -9,6 +9,7 @@ from lxml import etree
 from more_itertools import one
 
 from os2mo_fkk import depends
+from os2mo_fkk.events import SyncStatus
 from os2mo_fkk.events import sync
 from os2mo_fkk.klassifikation.models import Klasse as FKKKlasse
 from os2mo_fkk.models import ClassValidity
@@ -49,6 +50,8 @@ async def read_mo(
 
 
 @router.post("/sync/{uuid}")
-async def sync_uuid(uuid: UUID, mo: depends.GraphQLClient, fkk: depends.FKKAPI) -> None:
+async def sync_uuid(
+    uuid: UUID, mo: depends.GraphQLClient, fkk: depends.FKKAPI
+) -> SyncStatus:
     """Synchronise klassifikation from FKK to OS2mo."""
-    await sync(uuid, mo, fkk)
+    return await sync(uuid, mo, fkk)
