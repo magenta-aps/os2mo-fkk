@@ -249,3 +249,20 @@ async def test_delete(
         await assert_class(uuid, None)
 
     await verify()
+
+
+@pytest.mark.integration_test
+async def test_ignore_single_day(
+    test_client: AsyncClient,
+    graphql_client: GraphQLClient,
+    assert_class: AssertClass,
+) -> None:
+    """Test that single-day validities are ignored.
+
+    MO does not support objects with a validity less than a day."""
+    # This class starts 1988-01-01 and ends 1988-01-02.
+    uuid = UUID("339ed74a-b3e5-11e7-bfe9-0050c2490048")
+
+    assert (await test_client.post(f"/sync/{uuid}")).json() == SyncStatus.UP_TO_DATE
+    await assert_class(uuid, None)
+

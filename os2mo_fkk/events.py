@@ -77,10 +77,12 @@ async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> SyncStatus:
             for d in desired
             if (d.validity.end - d.validity.start) <= timedelta(days=1)
         )
-        logger.warning(
-            "Ignoring desired single-day class validities", ignored=single_day_desired
-        )
-        desired -= single_day_desired
+        if single_day_desired:
+            logger.warning(
+                "Ignoring desired single-day class validities",
+                ignored=single_day_desired,
+            )
+            desired -= single_day_desired
 
     log.info("Synchronise", actual=actual, desired=desired)
 
