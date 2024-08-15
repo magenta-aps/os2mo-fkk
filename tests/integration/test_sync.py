@@ -266,3 +266,19 @@ async def test_ignore_single_day(
     assert (await test_client.post(f"/sync/{uuid}")).json() == SyncStatus.UP_TO_DATE
     await assert_class(uuid, None)
 
+
+@pytest.mark.integration_test
+async def test_daylight_saving_dates(
+    test_client: AsyncClient, graphql_client: GraphQLClient
+) -> None:
+    """Test that timezones do not cause infinite synchronisation loops.
+
+    Regression test for #61610."""
+    # This class ends on 2010-10-31 at 00:00. Daylight saving ends in Denmark
+    # 2010-10-31 at 03:00 that year.
+    uuid = UUID("339ed74a-b3e5-11e7-81c3-0050c2490048")
+
+    assert (
+        await test_client.post(f"/sync/{uuid}")
+    ).json() == SyncStatus.CREATE_OR_UPDATE
+    assert (await test_client.post(f"/sync/{uuid}")).json() == SyncStatus.UP_TO_DATE
