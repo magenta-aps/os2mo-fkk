@@ -69,6 +69,23 @@ class ClassValidity(StrictBaseModel):
     name: str
     parent: UUID | None
 
+    def with_validity_as_dates(self) -> Self:
+        """MO does not support datetimes with a time, haha."""
+
+        def truncate_time(d: datetime) -> datetime:
+            if d in (NEGATIVE_INFINITY, POSITIVE_INFINITY):
+                return d
+            return datetime.combine(d, time.min, d.tzinfo)
+
+        return self.copy(
+            update=dict(
+                validity=Validity(
+                    start=truncate_time(self.validity.start),
+                    end=truncate_time(self.validity.end),
+                )
+            )
+        )
+
 
 def fkk_klasse_to_class_validities(
     klasse: FKKKlasse, facet: UUID
@@ -111,15 +128,17 @@ def fkk_klasse_to_class_validities(
     # Construct intermediate Class validity state for each timestamp pair
     for start, end in itertools.pairwise(sorted(timestamps)):
         # The published state of an FKK Klasse designates whether the object is
-        # considered "valid" according to the business logic in the interval. There is
-        # no guarantee that the constructed MO Class validity will be consistent (i.e.
-        # static in all values) during unpublished time periods, so we skip
-        # constructing MO Class validities for these periods.
+        # considered "valid" according to the business logic in the interval.
         published = one(filter_virkning(klasse.tilstand_publiceret, start, end))
         if not published.er_publiceret:
             continue
 
-        attribute = one(filter_virkning(klasse.attribut_egenskab, start, end))
+        try:
+            attribute = one(filter_virkning(klasse.attribut_egenskab, start, end))
+        except ValueError:
+            logger.warning("Missing required MO fields", interval=(start, end))
+            continue
+
         parent = only(filter_virkning(klasse.relation_overordnet, start, end))
 
         yield ClassValidity(

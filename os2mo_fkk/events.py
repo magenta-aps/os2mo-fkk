@@ -70,13 +70,17 @@ async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> SyncStatus:
             fkk_klasse_to_class_validities(fkk_klasse, facet=kle_number_facet)
         )
 
-    # TODO(#61435): MO does not support objects with a validity less than a day
     if desired:
-        single_day_desired = set(
+        # TODO(#61751): MO does not support datetimes with a time. Truncate
+        # time from the validity to avoid infinite synchronisation loops.
+        desired = {d.with_validity_as_dates() for d in desired}
+
+        # TODO(#61435): MO does not support objects with a validity less than a day
+        single_day_desired = {
             d
             for d in desired
             if (d.validity.end - d.validity.start) <= timedelta(days=1)
-        )
+        }
         if single_day_desired:
             logger.warning(
                 "Ignoring desired single-day class validities",
