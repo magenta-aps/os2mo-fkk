@@ -143,14 +143,18 @@ def mo_class_read_to_class_validities(
         # TODO (#61435): MOs GraphQL subtracts one day from the validity end dates when
         # reading, compared to what was written. This breaks the comparison and leads
         # to infinite synchronisation loops.
-        validity_end = validity.validity.to
-        if validity_end is not None:
-            assert validity_end.time() == time.min
-            validity_end += timedelta(days=1)
+        validity_to = validity.validity.to
+        if validity_to is not None:
+            assert validity_to.time() == time.min
+            validity_to += timedelta(days=1)
+        fixed_validity = GetClassClassesObjectsValiditiesValidity(
+            from_=validity.validity.from_,
+            to=validity_to,
+        )
 
         yield ClassValidity(
             facet=validity.facet_uuid,
-            validity=Validity.from_mo(validity.validity),
+            validity=Validity.from_mo(fixed_validity),
             uuid=validity.uuid,
             user_key=validity.user_key,
             name=validity.name,
