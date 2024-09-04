@@ -1,8 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 import asyncio
-from asyncio import CancelledError
-from asyncio import Task
+from contextlib import suppress
 from datetime import UTC
 from datetime import datetime
 from typing import AsyncContextManager
@@ -45,7 +44,7 @@ class FKKEventGenerator(AsyncContextManager):
         self._api = api
         self._amqp_system = amqp_system
         self._sessionmaker = sessionmaker
-        self._scheduler_task: Task | None = None
+        self._scheduler_task: asyncio.Task | None = None
 
     async def __aenter__(self) -> Self:
         """Start event generator."""
@@ -58,6 +57,8 @@ class FKKEventGenerator(AsyncContextManager):
         """Stop event generator."""
         assert self._scheduler_task is not None
         self._scheduler_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await self._scheduler_task
 
     async def _scheduler(self) -> None:
         """Async task which will run as long as the event-generator is started."""
@@ -66,9 +67,9 @@ class FKKEventGenerator(AsyncContextManager):
             try:
                 await self._generate()
                 await asyncio.sleep(self._settings.interval)
-            except CancelledError:
+            except asyncio.CancelledError:
                 logger.info("Stopping event-generator")
-                break
+                raise
             except Exception:  # pragma: no cover
                 logger.exception("Failed to generate events")
                 await asyncio.sleep(30)
