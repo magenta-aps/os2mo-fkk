@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
----
 services:
   init:
     image: magentaaps/os2mo-init:5
@@ -10,6 +9,8 @@ services:
       AUTH_REALM: "mo"
       CLIENT_ID: "dipex"
       CLIENT_SECRET: "603f1c82-d012-4d04-9382-dbe659c533fb"
+    networks:
+      - os2mo_default
     volumes:
       - type: bind
         source: ./init.config.yml
@@ -18,10 +19,18 @@ services:
 
   fkk:
     build: .
-    command: ["uvicorn", "--factory", "os2mo_fkk.app:create_app", "--host", "0.0.0.0", "--reload"]
+    command:
+      [
+        "uvicorn",
+        "--factory",
+        "os2mo_fkk.app:create_app",
+        "--host",
+        "0.0.0.0",
+        "--reload",
+      ]
     environment:
-      LOG_LEVEL: "INFO"
-      JSON_LOGS: "false"
+      FASTRAMQPI__LOG_LEVEL: "INFO"
+      FASTRAMQPI__JSON_LOGS: "false"
       # OS2mo
       FASTRAMQPI__MO_URL: "http://mo:5000"
       FASTRAMQPI__CLIENT_ID: "dipex"
@@ -48,6 +57,9 @@ services:
       # the Magenta Aps "Testmyndighed" with CVR 25052943.
       FKK__AUTHORITY_CONTEXT_CVR: "25052943"
       # END SYNCHRONISED WITH GITLAB CI
+    networks:
+      - default
+      - os2mo_default
     volumes:
       - ./dev-environment/cert.pem:/config/cert.pem:ro
       - ./os2mo_fkk/:/app/os2mo_fkk/:ro
@@ -61,9 +73,9 @@ services:
       POSTGRES_USER: "fastramqpi"
       POSTGRES_PASSWORD: "fastramqpi"
       POSTGRES_DB: "fastramqpi"
-
+    networks:
+      - default
 
 networks:
-  default:
+  os2mo_default:
     external: true
-    name: os2mo_default
