@@ -5,6 +5,7 @@ from copy import deepcopy
 from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
+from enum import Enum
 from itertools import count
 from typing import AsyncContextManager
 from typing import Self
@@ -129,6 +130,18 @@ def _is_token_valid(token: Element) -> bool:
     ).text
     assert expires is not None
     return datetime.fromisoformat(expires) > datetime.now(tz=UTC)
+
+
+class Status(int, Enum):
+    """Status codes from the FKK API.
+
+    See `Servicebeskrivelse til KlassifikationSystemService_7.pdf` Chapter 11.
+    """
+
+    OK = 20  # "OK"
+    NOT_FOUND = 44000  # "Object cannot be found"
+    NOT_FOUND2 = 44001  # TODO: undocumented error??
+    # ...
 
 
 class FKKAPI(AsyncContextManager):
@@ -318,7 +331,7 @@ class FKKAPI(AsyncContextManager):
         since: datetime,
         page_limit: int,
         page_offset: int,
-        user_key_filter: str | None,
+        user_key_filter: str | None = None,
     ) -> set[UUID]:
         body = etree.fromstring(
             """
@@ -366,26 +379,18 @@ class FKKAPI(AsyncContextManager):
             body=body,
         )
 
-        # Check response status
-        status_code = int(
-            _findtext(data, "{*}Body/{*}SoegOutput/{*}StandardRetur/{*}StatusKode")
-        )
-        # 44: Requested object not found
-        if status_code == 44:
+        # Check response
+        output = _find(data, "{*}Body/{*}SoegOutput")
+        status_code = int(_findtext(output, "{*}StandardRetur/{*}StatusKode"))
+        if status_code in (Status.NOT_FOUND, Status.NOT_FOUND2):
             return set()
-        # 20: Success
-        if status_code != 20:  # pragma: no cover
-            message = _find(
-                data, "{*}Body/{*}SoegOutput/{*}StandardRetur/{*}FejlbeskedTekst"
-            ).text
+        if status_code != Status.OK:
+            message = _find(output, "{*}StandardRetur/{*}FejlbeskedTekst").text
             raise LookupError(f"{status_code=} {message}")
 
         # Extract UUIDs
         return {
-            UUID(u.text)
-            for u in data.iterfind(
-                "{*}Body/{*}SoegOutput/{*}IdListe/{*}UUIDIdentifikator"
-            )
+            UUID(u.text) for u in output.iterfind("{*}IdListe/{*}UUIDIdentifikator")
         }
 
     async def get_changed_uuids(self, since: datetime) -> set[UUID]:
@@ -393,10 +398,10 @@ class FKKAPI(AsyncContextManager):
 
         We only search KLE Emneplan (00000c7e-face-4001-8000-000000000000).
         """
-        # The endpoint supports a maximum of 500 results per page. Requesting fewer
-        # elements does not seem to impact the response time (FKK is probably
-        # implemented on top of LoRa).
-        page_limit = 500
+        # The endpoint supports a maximum of 10'000 results per page.
+        # Requesting fewer elements does not seem to impact the response time
+        # (FKK is probably implemented on top of LoRa).
+        page_limit = 10_000
         changed = set()
         for page_offset in count(step=page_limit):
             logger.info("Getting changed UUIDs", since=since, page_offset=page_offset)
@@ -436,21 +441,16 @@ class FKKAPI(AsyncContextManager):
             body=body,
         )
 
-        # Check response status
-        status_code = int(
-            _findtext(data, "{*}Body/{*}LaesOutput/{*}StandardRetur/{*}StatusKode")
-        )
-        # 44: Requested object not found
-        if status_code == 44:
+        # Check response
+        output = _find(data, "{*}Body/{*}LaesOutput")
+        status_code = int(_findtext(output, "{*}StandardRetur/{*}StatusKode"))
+        if status_code == Status.NOT_FOUND:
             return None
-        # 20: Success
-        if status_code != 20:  # pragma: no cover
-            message = _find(
-                data, "{*}Body/{*}SoegOutput/{*}StandardRetur/{*}FejlbeskedTekst"
-            ).text
+        if status_code != Status.OK:
+            message = _find(output, "{*}StandardRetur/{*}FejlbeskedTekst").text
             raise LookupError(f"{status_code=} {message}")
 
-        return _find(data, "{*}Body/{*}LaesOutput")
+        return output
 
     async def read(self, uuid: UUID) -> Klasse | None:
         """Read and parse a single object."""
