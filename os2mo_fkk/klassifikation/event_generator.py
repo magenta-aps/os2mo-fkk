@@ -4,6 +4,7 @@ import asyncio
 from contextlib import suppress
 from datetime import UTC
 from datetime import datetime
+from datetime import timedelta
 from typing import AsyncContextManager
 from typing import Self
 
@@ -83,9 +84,15 @@ class FKKEventGenerator(AsyncContextManager):
             if last_run is None:
                 last_run = LastRun(datetime=datetime.min.replace(tzinfo=UTC))
 
+            # Subtract a few seconds from the lookup time to account for clock
+            # skew between our system and FKK.
+            since = last_run.datetime
+            with suppress(OverflowError):
+                since -= timedelta(seconds=10)
+
             # Fetch changed UUIDs from FKK
             now = datetime.now(UTC)
-            changed = await self._api.get_changed_uuids(since=last_run.datetime)
+            changed = await self._api.get_changed_uuids(since)
             logger.info("Changes", uuids=changed)
 
             # Publish changes to internal AMQP exchange
