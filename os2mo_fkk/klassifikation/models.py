@@ -33,32 +33,32 @@ BOOLEANS = {
 }
 
 
-class Virkning(StrictBaseModel):
+class Virkning(StrictBaseModel, frozen=True):
     fra: datetime
     til: datetime
 
 
-class VirkningMixin(StrictBaseModel):
+class VirkningMixin(StrictBaseModel, frozen=True):
     virkning: Virkning
 
 
 HasVirking = TypeVar("HasVirking", bound=VirkningMixin)
 
 
-class Egenskab(VirkningMixin):
+class Egenskab(VirkningMixin, frozen=True):
     brugervendtnoegle: str
     titel: str
 
 
-class PubliceretTilstand(VirkningMixin):
+class PubliceretTilstand(VirkningMixin, frozen=True):
     er_publiceret: bool
 
 
-class OverordnetRelation(VirkningMixin):
+class OverordnetRelation(VirkningMixin, frozen=True):
     uuid: UUID
 
 
-class Klasse(StrictBaseModel):
+class Klasse(StrictBaseModel, frozen=True):
     uuid: UUID
     attribut_egenskab: list[Egenskab]
     tilstand_publiceret: list[PubliceretTilstand]
