@@ -98,7 +98,7 @@ class FKKSettings(BaseModel):
 
 
 class Settings(BaseSettings):
-    class Config:
+    class Config(BaseSettings.Config):
         frozen = True
         env_nested_delimiter = "__"
 

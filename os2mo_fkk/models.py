@@ -34,7 +34,7 @@ from os2mo_fkk.util import StrictBaseModel
 logger = structlog.stdlib.get_logger()
 
 
-class Validity(StrictBaseModel):
+class Validity(StrictBaseModel, frozen=True):
     start: datetime
     end: datetime
 
@@ -54,7 +54,7 @@ class Validity(StrictBaseModel):
         )
 
 
-class ClassValidity(StrictBaseModel):
+class ClassValidity(StrictBaseModel, frozen=True):
     """Intermediate, comparable Class model.
 
     Both FKK Klasser and MO GraphQL Classes will be converted to this model for
