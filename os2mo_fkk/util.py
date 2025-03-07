@@ -10,9 +10,8 @@ NEGATIVE_INFINITY = datetime.min.replace(tzinfo=UTC)
 POSITIVE_INFINITY = datetime.max.replace(tzinfo=UTC)
 
 
-class StrictBaseModel(BaseModel):
+class StrictBaseModel(BaseModel, frozen=True):
     """Pydantic BaseModel with strict(er) defaults."""
 
     class Config:
         extra = Extra.forbid
-        frozen = True
