@@ -300,6 +300,114 @@ async def test_daylight_saving_dates(test_client: AsyncClient) -> None:
 
 
 @pytest.mark.integration_test
+async def test_synchronise_history(
+    test_client: AsyncClient,
+    fake_fkk_api: FakeFKKAPI,
+    assert_class: AssertClass,
+    kle_number_facet: UUID,
+) -> None:
+    """Test that classes with multiple validities can be synchronised."""
+    # There are no Klasser with history in FKK Test; we must patch a made-up
+    # one into the FKK API.
+    uuid = UUID("00000000-5158-4b5a-0000-000000000000")
+    klasse_json = {
+        "uuid": str(uuid),
+        "attribut_egenskab": [
+            {
+                "virkning": {
+                    "fra": "2000-01-01T00:00:00+00:00",
+                    "til": "2003-01-01T00:00:00+00:00",
+                },
+                "brugervendtnoegle": "foo",
+                "titel": "foo",
+            },
+            {
+                "virkning": {
+                    "fra": "2003-01-01T00:00:00+00:00",
+                    "til": "2007-01-01T00:00:00+00:00",
+                },
+                "brugervendtnoegle": "bar",
+                "titel": "bar",
+            },
+            {
+                "virkning": {
+                    "fra": "2007-01-01T00:00:00+00:00",
+                    "til": "2015-01-01T00:00:00+00:00",
+                },
+                "brugervendtnoegle": "baz",
+                "titel": "baz",
+            },
+        ],
+        "tilstand_publiceret": [
+            {
+                "virkning": {
+                    "fra": "2000-01-01T00:00:00+00:00",
+                    "til": "2005-01-01T00:00:00+00:00",
+                },
+                "er_publiceret": True,
+            },
+            {
+                "virkning": {
+                    "fra": "2005-01-01T00:00:00+00:00",
+                    "til": "2010-01-01T00:00:00+00:00",
+                },
+                "er_publiceret": False,
+            },
+            {
+                "virkning": {
+                    "fra": "2010-01-01T00:00:00+00:00",
+                    "til": "2015-01-01T00:00:00+00:00",
+                },
+                "er_publiceret": True,
+            },
+        ],
+        "relation_overordnet": [],
+    }
+    fake_fkk_api.fakes[uuid] = FKKKlasse.parse_obj(klasse_json)
+
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.CREATE_OR_UPDATE
+    await assert_class(
+        uuid,
+        [
+            GraphqlClassValidity(
+                validity=GraphqlValidity(
+                    from_=datetime(2000, 1, 1, 0, 0, tzinfo=MO_TZ),
+                    to=datetime(2003, 1, 1, 0, 0, tzinfo=MO_TZ),
+                ),
+                facet_uuid=kle_number_facet,
+                uuid=uuid,
+                user_key="foo",
+                name="foo",
+                parent_uuid=None,
+            ),
+            GraphqlClassValidity(
+                validity=GraphqlValidity(
+                    from_=datetime(2003, 1, 1, 0, 0, tzinfo=MO_TZ),
+                    to=datetime(2005, 1, 1, 0, 0, tzinfo=MO_TZ),
+                ),
+                facet_uuid=kle_number_facet,
+                uuid=uuid,
+                user_key="bar",
+                name="bar",
+                parent_uuid=None,
+            ),
+            GraphqlClassValidity(
+                validity=GraphqlValidity(
+                    from_=datetime(2010, 1, 1, 0, 0, tzinfo=MO_TZ),
+                    to=datetime(2015, 1, 1, 0, 0, tzinfo=MO_TZ),
+                ),
+                facet_uuid=kle_number_facet,
+                uuid=uuid,
+                user_key="baz",
+                name="baz",
+                parent_uuid=None,
+            ),
+        ],
+    )
+
+
+@pytest.mark.integration_test
 async def test_frederikshavn_custom_kle(
     test_client: AsyncClient,
     graphql_client: GraphQLClient,
