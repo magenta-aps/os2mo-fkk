@@ -39,16 +39,6 @@ mutation update_class($input: ClassUpdateInput!) {
   }
 }
 
-mutation truncate_class($uuid: UUID!) {
-  class_terminate(
-    # MO will add and remove a day from the provided dates, so we cannot use
-    # true datetime.{min,max}.
-    input: { uuid: $uuid, from: "0001-01-02", to: "9999-12-30" }
-  ) {
-    uuid
-  }
-}
-
 mutation delete_class($uuid: UUID!) {
   class_delete(uuid: $uuid) {
     uuid

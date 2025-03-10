@@ -153,9 +153,7 @@ async def verify_synchronised(
 
 @pytest.mark.integration_test
 async def test_synchronisation(
-    test_client: AsyncClient,
-    graphql_client: GraphQLClient,
-    verify_synchronised: VerifySynchronised,
+    test_client: AsyncClient, verify_synchronised: VerifySynchronised
 ) -> None:
     """Test that classes are synchronised properly and automatically."""
     await verify_synchronised()
@@ -217,7 +215,8 @@ async def test_unrelated_class_untouched(
     )
 
     # Bait the integration into modifying or deleting it
-    assert (await test_client.post(f"/sync/{uuid}")).json() == SyncStatus.WONT_DELETE
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.WONT_DELETE
 
     # Verify that it wasn't fooled by our silliness
     await assert_class(
@@ -272,9 +271,7 @@ async def test_delete(
 
 @pytest.mark.integration_test
 async def test_ignore_single_day(
-    test_client: AsyncClient,
-    graphql_client: GraphQLClient,
-    assert_class: AssertClass,
+    test_client: AsyncClient, assert_class: AssertClass
 ) -> None:
     """Test that single-day validities are ignored.
 
@@ -282,14 +279,13 @@ async def test_ignore_single_day(
     # This class starts 1988-01-01 and ends 1988-01-02.
     uuid = UUID("339ed74a-b3e5-11e7-bfe9-0050c2490048")
 
-    assert (await test_client.post(f"/sync/{uuid}")).json() == SyncStatus.UP_TO_DATE
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.UP_TO_DATE
     await assert_class(uuid, None)
 
 
 @pytest.mark.integration_test
-async def test_daylight_saving_dates(
-    test_client: AsyncClient, graphql_client: GraphQLClient
-) -> None:
+async def test_daylight_saving_dates(test_client: AsyncClient) -> None:
     """Test that timezones do not cause infinite synchronisation loops.
 
     Regression test for #61610."""
@@ -297,10 +293,118 @@ async def test_daylight_saving_dates(
     # 2010-10-31 at 03:00 that year.
     uuid = UUID("339ed74a-b3e5-11e7-81c3-0050c2490048")
 
-    assert (
-        await test_client.post(f"/sync/{uuid}")
-    ).json() == SyncStatus.CREATE_OR_UPDATE
-    assert (await test_client.post(f"/sync/{uuid}")).json() == SyncStatus.UP_TO_DATE
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.CREATE_OR_UPDATE
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.UP_TO_DATE
+
+
+@pytest.mark.integration_test
+async def test_synchronise_history(
+    test_client: AsyncClient,
+    fake_fkk_api: FakeFKKAPI,
+    assert_class: AssertClass,
+    kle_number_facet: UUID,
+) -> None:
+    """Test that classes with multiple validities can be synchronised."""
+    # There are no Klasser with history in FKK Test; we must patch a made-up
+    # one into the FKK API.
+    uuid = UUID("00000000-5158-4b5a-0000-000000000000")
+    klasse_json = {
+        "uuid": str(uuid),
+        "attribut_egenskab": [
+            {
+                "virkning": {
+                    "fra": "2000-01-01T00:00:00+00:00",
+                    "til": "2003-01-01T00:00:00+00:00",
+                },
+                "brugervendtnoegle": "foo",
+                "titel": "foo",
+            },
+            {
+                "virkning": {
+                    "fra": "2003-01-01T00:00:00+00:00",
+                    "til": "2007-01-01T00:00:00+00:00",
+                },
+                "brugervendtnoegle": "bar",
+                "titel": "bar",
+            },
+            {
+                "virkning": {
+                    "fra": "2007-01-01T00:00:00+00:00",
+                    "til": "2015-01-01T00:00:00+00:00",
+                },
+                "brugervendtnoegle": "baz",
+                "titel": "baz",
+            },
+        ],
+        "tilstand_publiceret": [
+            {
+                "virkning": {
+                    "fra": "2000-01-01T00:00:00+00:00",
+                    "til": "2005-01-01T00:00:00+00:00",
+                },
+                "er_publiceret": True,
+            },
+            {
+                "virkning": {
+                    "fra": "2005-01-01T00:00:00+00:00",
+                    "til": "2010-01-01T00:00:00+00:00",
+                },
+                "er_publiceret": False,
+            },
+            {
+                "virkning": {
+                    "fra": "2010-01-01T00:00:00+00:00",
+                    "til": "2015-01-01T00:00:00+00:00",
+                },
+                "er_publiceret": True,
+            },
+        ],
+        "relation_overordnet": [],
+    }
+    fake_fkk_api.fakes[uuid] = FKKKlasse.parse_obj(klasse_json)
+
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.CREATE_OR_UPDATE
+    await assert_class(
+        uuid,
+        [
+            GraphqlClassValidity(
+                validity=GraphqlValidity(
+                    from_=datetime(2000, 1, 1, 0, 0, tzinfo=MO_TZ),
+                    to=datetime(2003, 1, 1, 0, 0, tzinfo=MO_TZ),
+                ),
+                facet_uuid=kle_number_facet,
+                uuid=uuid,
+                user_key="foo",
+                name="foo",
+                parent_uuid=None,
+            ),
+            GraphqlClassValidity(
+                validity=GraphqlValidity(
+                    from_=datetime(2003, 1, 1, 0, 0, tzinfo=MO_TZ),
+                    to=datetime(2005, 1, 1, 0, 0, tzinfo=MO_TZ),
+                ),
+                facet_uuid=kle_number_facet,
+                uuid=uuid,
+                user_key="bar",
+                name="bar",
+                parent_uuid=None,
+            ),
+            GraphqlClassValidity(
+                validity=GraphqlValidity(
+                    from_=datetime(2010, 1, 1, 0, 0, tzinfo=MO_TZ),
+                    to=datetime(2015, 1, 1, 0, 0, tzinfo=MO_TZ),
+                ),
+                facet_uuid=kle_number_facet,
+                uuid=uuid,
+                user_key="baz",
+                name="baz",
+                parent_uuid=None,
+            ),
+        ],
+    )
 
 
 @pytest.mark.integration_test
@@ -312,8 +416,9 @@ async def test_frederikshavn_custom_kle(
     kle_number_facet: UUID,
 ) -> None:
     """Test that a Klasse that does not start or end at midnight can be synchronised."""
-    # The Frederikshavn-specific FKK Klasse is from
-    # curl http://localhost:8000/read/4130b463-044e-46da-a922-79a50290c904/parsed
+    # The Klasse is local to Frederikshavn only; we must patch it into the FKK
+    # API. It is from
+    # > curl http://localhost:8000/read/4130b463-044e-46da-a922-79a50290c904/parsed
     # on Frederikshavn test 2024-08-16.
     uuid = UUID("4130b463-044e-46da-a922-79a50290c904")
     klasse_json = {
@@ -354,27 +459,20 @@ async def test_frederikshavn_custom_kle(
             }
         ],
     }
-    klasse = FKKKlasse.parse_obj(klasse_json)
-
-    # The Klasse is local to Frederikshavn only; we must patch it into the FKK API.
-    fake_fkk_api.fakes[uuid] = klasse
-    assert (await test_client.get(f"/read/{uuid}/parsed")).json() == klasse_json
+    fake_fkk_api.fakes[uuid] = FKKKlasse.parse_obj(klasse_json)
 
     # Check infinite synchronisation loop
-    assert (
-        await test_client.post(f"/sync/{uuid}")
-    ).json() == SyncStatus.CREATE_OR_UPDATE
-    assert (await test_client.post(f"/sync/{uuid}")).json() == SyncStatus.UP_TO_DATE
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.CREATE_OR_UPDATE
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.UP_TO_DATE
 
     await assert_class(
         uuid,
         [
             GraphqlClassValidity(
                 validity=GraphqlValidity(
-                    from_=datetime(
-                        2019, 8, 19, 0, 0, tzinfo=ZoneInfo(key="Europe/Copenhagen")
-                    ),
-                    to=None,
+                    from_=datetime(2019, 8, 19, 0, 0, tzinfo=MO_TZ), to=None
                 ),
                 facet_uuid=kle_number_facet,
                 uuid=UUID("4130b463-044e-46da-a922-79a50290c904"),

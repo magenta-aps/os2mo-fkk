@@ -100,13 +100,9 @@ async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> SyncStatus:
     if not desired:
         # MO class must exist or the states would be equal
         assert mo_class is not None
-        # The UUID we are handling could be missing from FKK because it was
-        # deleted, but it could also be a class from MO that has nothing to do
-        # with FKK. We have no way to know since there is nothing in FKK
-        # (anymore), so we err on the side of caution and abort if the MO class
-        # is not under the kle_number facet. This allows us to clean-up deleted
-        # FKK classes in all cases except if someone manually moves it to a
-        # different facet between events after it was deleted from FKK.
+        # The class exists in MO but not in FKK. Either it was deleted from
+        # FKK, or it is a class in MO that has nothing to do with FKK. Abort if
+        # the MO class is not under the `kle_number` facet.
         mo_class_facets = {validity.facet_uuid for validity in mo_class.validities}
         if mo_class_facets != {kle_number_facet}:
             log.info("MO class is not KLE: won't delete")
@@ -116,26 +112,17 @@ async def sync(uuid: UUID, mo: GraphQLClient, fkk: FKKAPI) -> SyncStatus:
         return SyncStatus.DELETE
 
     # The FKK klasse exists, and we have a set of desired intermediate
-    # ClassValidity states we need to synchronise to MO. Each validity can be
-    # added to MO using either a GraphQL `class_create` or `class_update`.
-    if not actual:
-        # If the class does not already exist in MO, we select a random
-        # validity and `class_create` using it.
-        log.info("Creating new class in MO")
-        some_validity = desired.pop()
-        create_input = class_validity_to_create_input(some_validity)
-        await mo.create_class(create_input)
-    else:
-        # Otherwise, we truncate all the class's existing validities using
-        # `class_terminate`.
-        log.info("Truncating existing class validities in MO")
-        await mo.truncate_class(uuid)
+    # ClassValidity states we need to synchronise to MO.
+    if actual:
+        # Delete the class's existing validities
+        log.info("Deleting class from MO")
+        await mo.delete_class(uuid)
 
-    # In either case, we now have a MO class to which we can `class_update` the
-    # remaining desired validities.
-    log.info("Updating class validities in MO")
+    # `class_create` a random desired validity, then `class_update` the rest
+    log.info("Writing class to MO")
+    some_validity = desired.pop()
+    await mo.create_class(class_validity_to_create_input(some_validity))
     for validity in desired:
-        update_input = class_validity_to_update_input(validity)
-        await mo.update_class(update_input)
+        await mo.update_class(class_validity_to_update_input(validity))
 
     return SyncStatus.CREATE_OR_UPDATE
