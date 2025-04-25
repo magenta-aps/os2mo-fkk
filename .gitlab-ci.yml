@@ -81,10 +81,6 @@ Integration-test:
   rules:
     - <<: *if-merge-request
   variables:
-    # BEGIN SYNCHRONISED WITH COMPOSE
     FKK__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
-    FKK__ENVIRONMENT: "test"
-    FKK__CHANGED_UUIDS_USER_KEY_FILTER: "85*"
     FKK__CERTIFICATE: "/builds/$CI_PROJECT_PATH/dev-environment/cert.pem"
     FKK__AUTHORITY_CONTEXT_CVR: "25052943"
-    # END SYNCHRONISED WITH COMPOSE
