@@ -44,7 +44,6 @@ services:
       FASTRAMQPI__DATABASE__HOST: "db"
       FASTRAMQPI__DATABASE__NAME: "fastramqpi"
       # FKK
-      # BEGIN SYNCHRONISED WITH GITLAB CI
       FKK__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
       FKK__ENVIRONMENT: "test"
       # Only fetch klasser under ' Kommunens administrative systemer', otherwise
@@ -56,7 +55,6 @@ services:
       # Use service agreement (serviceaftale) 'test_os2mo_dev_fkk' which is accepted by
       # the Magenta Aps "Testmyndighed" with CVR 25052943.
       FKK__AUTHORITY_CONTEXT_CVR: "25052943"
-      # END SYNCHRONISED WITH GITLAB CI
     networks:
       - default
       - os2mo_default

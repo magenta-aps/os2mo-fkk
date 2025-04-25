@@ -10,14 +10,25 @@ from fastapi import FastAPI
 from gql.client import AsyncClientSession
 from httpx import ASGITransport
 from httpx import AsyncClient
-from pytest import MonkeyPatch
 from respx import MockRouter
 
 from os2mo_fkk.app import create_app
 
 
-@pytest.fixture
-async def _app(monkeypatch: MonkeyPatch) -> FastAPI:
+@pytest.fixture(
+    params=[
+        pytest.param(
+            None,
+            marks=pytest.mark.envvar(
+                {
+                    "FKK__ENVIRONMENT": "test",
+                    "FKK__CHANGED_UUIDS_USER_KEY_FILTER": "85*",
+                }
+            ),
+        )
+    ]
+)
+async def _app() -> FastAPI:
     app = create_app()
     return app
 
