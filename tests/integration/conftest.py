@@ -28,28 +28,17 @@ from os2mo_fkk.app import create_app
         )
     ]
 )
-async def _app() -> FastAPI:
-    app = create_app()
-    return app
-
-
-@pytest.fixture
-async def asgiapp(_app: FastAPI) -> AsyncIterator[ASGIApp]:
+async def app() -> AsyncIterator[ASGIApp]:
     """ASGI app with lifespan run."""
-    async with LifespanManager(_app) as manager:
+    app = create_app()
+    async with LifespanManager(app) as manager:
         yield manager.app
 
 
 @pytest.fixture
-async def app(_app: FastAPI, asgiapp: ASGIApp) -> FastAPI:
-    """FastAPI app with lifespan run."""
-    return _app
-
-
-@pytest.fixture
-async def test_client(asgiapp: ASGIApp) -> AsyncIterator[AsyncClient]:
+async def test_client(app: ASGIApp) -> AsyncIterator[AsyncClient]:
     """Create test client with associated lifecycles."""
-    transport = ASGITransport(app=asgiapp, client=("1.2.3.4", 123))  # type: ignore
+    transport = ASGITransport(app=app, client=("1.2.3.4", 123))  # type: ignore
     async with AsyncClient(
         transport=transport, base_url="http://example.com"
     ) as client:
