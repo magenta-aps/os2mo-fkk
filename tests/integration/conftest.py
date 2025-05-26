@@ -66,7 +66,7 @@ async def graphql_client(app: FastAPI) -> AsyncClientSession:
 def passthrough_fkk(respx_mock: MockRouter) -> None:
     """Allow calls to FKK."""
     respx_mock.route(
-        host="adgangsstyring.eksterntest-stoettesystemerne.dk"
+        host="n2adgangsstyring.eksterntest-stoettesystemerne.dk"
     ).pass_through()
     respx_mock.route(
         host="klassifikation.eksterntest-stoettesystemerne.dk"
