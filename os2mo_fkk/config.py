@@ -92,9 +92,9 @@ class FKKSettings(BaseModel):
     def token_url(self) -> str:
         match self.environment:
             case "production":  # pragma: no cover
-                return "https://adgangsstyring.stoettesystemerne.dk/runtime/services/kombittrust/14/certificatemixed"
+                return "https://n2adgangsstyring.stoettesystemerne.dk/runtime/services/kombittrust/14/certificatemixed"
             case "test":
-                return "https://adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/services/kombittrust/14/certificatemixed"
+                return "https://n2adgangsstyring.eksterntest-stoettesystemerne.dk/runtime/services/kombittrust/14/certificatemixed"
 
 
 class Settings(BaseSettings):
