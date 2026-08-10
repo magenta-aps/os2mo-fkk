@@ -274,13 +274,41 @@ async def test_delete(
 
 @pytest.mark.integration_test
 async def test_ignore_single_day(
-    test_client: AsyncClient, assert_class: AssertClass
+    test_client: AsyncClient,
+    fake_fkk_api: FakeFKKAPI,
+    assert_class: AssertClass,
 ) -> None:
     """Test that single-day validities are ignored.
 
-    MO does not support objects with a validity less than a day."""
+    MO does not support objects with a validity less than a day. There are no
+    single-day Klasser in FKK Test, so we must patch a made-up one into the FKK
+    API."""
     # This class starts 1988-01-01 and ends 1988-01-02.
-    uuid = UUID("339ed74a-b3e5-11e7-bfe9-0050c2490048")
+    uuid = UUID("11111111-1111-1111-1111-111111111111")
+    klasse_json = {
+        "uuid": str(uuid),
+        "attribut_egenskab": [
+            {
+                "virkning": {
+                    "fra": "1988-01-01T00:00:00+01:00",
+                    "til": "1988-01-02T00:00:00+01:00",
+                },
+                "brugervendtnoegle": "16.20.99",
+                "titel": "Single Day Test",
+            }
+        ],
+        "tilstand_publiceret": [
+            {
+                "virkning": {
+                    "fra": "1988-01-01T00:00:00+01:00",
+                    "til": "1988-01-02T00:00:00+01:00",
+                },
+                "er_publiceret": True,
+            }
+        ],
+        "relation_overordnet": [],
+    }
+    fake_fkk_api.fakes[uuid] = FKKKlasse.parse_obj(klasse_json)
 
     r = await test_client.post(f"/sync/{uuid}")
     assert r.json() == SyncStatus.UP_TO_DATE
