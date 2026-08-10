@@ -184,6 +184,8 @@ async def test_bad_update_resynchronisation(
         )
     )
 
+    # Editing the class in MO emits a `class` event, which the integration
+    # reacts to via the GraphQL event system and re-synchronises from FKK.
     await verify_synchronised()
 
 
@@ -261,7 +263,8 @@ async def test_delete(
         )
     )
 
-    # Verify that it is deleted from MO
+    # Creating the class in MO emits a `class` event, which the integration
+    # reacts to via the GraphQL event system and deletes, since it isn't in FKK.
     @retry(stop=stop_after_delay(120))
     async def verify() -> None:
         await assert_class(uuid, None)
