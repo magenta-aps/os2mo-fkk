@@ -6,9 +6,10 @@ from enum import auto
 from uuid import UUID
 
 import structlog
+from fastapi import APIRouter
+from fastramqpi.events import Event
 from fastramqpi.ramqp import Router
 from fastramqpi.ramqp.depends import RateLimit
-from fastramqpi.ramqp.mo import MORouter
 from fastramqpi.ramqp.mo import PayloadUUID
 from more_itertools import one
 from more_itertools import only
@@ -23,15 +24,16 @@ from os2mo_fkk.models import mo_class_read_to_class_validities
 
 logger = structlog.stdlib.get_logger()
 
-mo_router = MORouter()
+mo_router = APIRouter()
 fkk_router = Router()
 
 
-@mo_router.register("class")
-async def mo_handler(
-    uuid: PayloadUUID, mo: depends.GraphQLClient, fkk: depends.FKKAPI, _: RateLimit
+@mo_router.post("/events/mo/class")
+async def mo_class_event(
+    mo: depends.GraphQLClient, fkk: depends.FKKAPI, event: Event[UUID]
 ) -> None:
-    await sync(uuid, mo, fkk)
+    logger.info("Received MO class event", mo_event=event.dict())
+    await sync(event.subject, mo, fkk)
 
 
 @fkk_router.register("change")

@@ -7,7 +7,7 @@ from typing import Literal
 
 import structlog
 from cryptography import x509
-from fastramqpi.config import Settings as _FastRAMQPISettings
+from fastramqpi.config import Settings as FastRAMQPISettings
 from fastramqpi.ramqp.config import AMQPConnectionSettings
 from pydantic import BaseModel
 from pydantic import BaseSettings
@@ -17,25 +17,12 @@ from pydantic import validator
 logger = structlog.stdlib.get_logger()
 
 
-class MOAMQPConnectionSettings(AMQPConnectionSettings):
-    exchange = "os2mo_fkk"
-    queue_prefix = "os2mo_fkk"
-    upstream_exchange = "os2mo"
-    # The FKK API seems to be hosted on a spare Raspberry Pi Zero they also
-    # use to mine bitcoins.
-    prefetch_count = 1
-
-
 class FKKAMQPConnectionSettings(AMQPConnectionSettings):
     exchange = "fkk"
     queue_prefix = "fkk"
     # The FKK API seems to be hosted on a spare Raspberry Pi Zero they also
     # use to mine bitcoins.
     prefetch_count = 1
-
-
-class FastRAMQPISettings(_FastRAMQPISettings):
-    amqp: MOAMQPConnectionSettings
 
 
 class FKKSettings(BaseModel):
