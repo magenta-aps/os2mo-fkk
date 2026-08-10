@@ -31,26 +31,33 @@ async def test_read_parsed(test_client: AsyncClient) -> None:
         "attribut_egenskab": [
             {
                 "virkning": {
-                    "fra": "1988-01-01T00:00:00+01:00",
+                    "fra": "0001-01-01T00:00:00+00:00",
                     "til": "9999-12-31T23:59:59.999999+00:00",
                 },
                 "brugervendtnoegle": "85.15.02",
-                "titel": "IT-sikkerhed og sikkerhedsforanstaltninger",
+                "titel": "It-og cybersikkerhed og sikkerhedsforanstaltninger",
             }
         ],
         "tilstand_publiceret": [
+            {
+                "virkning": {
+                    "fra": "0001-01-01T00:00:00+00:00",
+                    "til": "1988-01-01T00:00:00+01:00",
+                },
+                "er_publiceret": False,
+            },
             {
                 "virkning": {
                     "fra": "1988-01-01T00:00:00+01:00",
                     "til": "9999-12-31T23:59:59.999999+00:00",
                 },
                 "er_publiceret": True,
-            }
+            },
         ],
         "relation_overordnet": [
             {
                 "virkning": {
-                    "fra": "1988-01-01T00:00:00+01:00",
+                    "fra": "0001-01-01T00:00:00+00:00",
                     "til": "9999-12-31T23:59:59.999999+00:00",
                 },
                 "uuid": "8f847ae9-cc68-414a-81b3-6444b46d8480",
@@ -81,7 +88,7 @@ async def test_read_mo(test_client: AsyncClient) -> None:
             },
             "uuid": "0095665f-3685-498b-8ba7-2339d05a5bda",
             "user_key": "85.15.02",
-            "name": "IT-sikkerhed og sikkerhedsforanstaltninger",
+            "name": "It-og cybersikkerhed og sikkerhedsforanstaltninger",
             "parent": "8f847ae9-cc68-414a-81b3-6444b46d8480",
         },
     ]

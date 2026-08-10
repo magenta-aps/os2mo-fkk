@@ -34,7 +34,7 @@ MO_TZ = ZoneInfo("Europe/Copenhagen")
 
 # Kommunens administrative systemer
 UUID_85 = UUID("dbb1b318-3c85-11e3-9b6f-0050c2490048")
-# Etablering og udvikling af IT-systemer
+# Etablering og udvikling af it-systemer
 UUID_85_11 = UUID("b2d1f90f-eaf3-45b8-9340-dc2471d0a06b")
 # Administrative systemer
 UUID_85_11_06 = UUID("3fb6adba-6d89-4af0-af0b-728b51947a1f")
@@ -126,7 +126,7 @@ async def verify_synchronised(
                     facet_uuid=kle_number_facet,
                     uuid=UUID_85_11,
                     user_key="85.11",
-                    name="Etablering og udvikling af IT-systemer",
+                    name="Etablering og udvikling af it-systemer",
                     parent_uuid=UUID_85,
                 )
             ],
