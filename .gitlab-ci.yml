@@ -53,7 +53,7 @@ include:
       - gitlab-ci-templates/common/config-updater-salt.v1.yml
   - project: labs/salt-automation
     file:
-      - gitlab-ci-templates/python/pytest.v1.yml
+      - gitlab-ci-templates/python/pytest.v2.yml
     inputs:
       pytest_addopts: "-m 'not integration_test'"
     rules:
