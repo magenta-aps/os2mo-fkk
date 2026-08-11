@@ -316,6 +316,63 @@ async def test_ignore_single_day(
 
 
 @pytest.mark.integration_test
+async def test_import_multi_day(
+    test_client: AsyncClient,
+    fake_fkk_api: FakeFKKAPI,
+    assert_class: AssertClass,
+    kle_number_facet: UUID,
+) -> None:
+    """Test that validities longer than a day are imported into MO.
+
+    Counterpart to `test_ignore_single_day`."""
+    # This class starts 2000-01-01 and ends 2005-01-01.
+    uuid = UUID("22222222-2222-2222-2222-222222222222")
+    klasse_json = {
+        "uuid": str(uuid),
+        "attribut_egenskab": [
+            {
+                "virkning": {
+                    "fra": "2000-01-01T00:00:00+00:00",
+                    "til": "2005-01-01T00:00:00+00:00",
+                },
+                "brugervendtnoegle": "16.20.98",
+                "titel": "Multi Day Test",
+            }
+        ],
+        "tilstand_publiceret": [
+            {
+                "virkning": {
+                    "fra": "2000-01-01T00:00:00+00:00",
+                    "til": "2005-01-01T00:00:00+00:00",
+                },
+                "er_publiceret": True,
+            }
+        ],
+        "relation_overordnet": [],
+    }
+    fake_fkk_api.fakes[uuid] = FKKKlasse.parse_obj(klasse_json)
+
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.CREATE_OR_UPDATE
+    await assert_class(
+        uuid,
+        [
+            GraphqlClassValidity(
+                validity=GraphqlValidity(
+                    from_=datetime(2000, 1, 1, 0, 0, tzinfo=MO_TZ),
+                    to=datetime(2005, 1, 1, 0, 0, tzinfo=MO_TZ),
+                ),
+                facet_uuid=kle_number_facet,
+                uuid=uuid,
+                user_key="16.20.98",
+                name="Multi Day Test",
+                parent_uuid=None,
+            )
+        ],
+    )
+
+
+@pytest.mark.integration_test
 async def test_daylight_saving_dates(test_client: AsyncClient) -> None:
     """Test that timezones do not cause infinite synchronisation loops.
 
