@@ -12,6 +12,9 @@ from tenacity import stop_after_delay
 
 
 @pytest.mark.integration_test
+# Poll FKK frequently so a generation cycle runs (and updates the metric) within
+# the test window, instead of once every default 30 minutes.
+@pytest.mark.envvar({"FKK__INTERVAL": "1"})
 async def test_dipex_last_success_timestamp_metric(test_client: AsyncClient) -> None:
     """Test that the event-generator updates the last run metric."""
 

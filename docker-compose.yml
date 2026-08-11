@@ -37,6 +37,9 @@ services:
       FASTRAMQPI__CLIENT_SECRET: "603f1c82-d012-4d04-9382-dbe659c533fb"
       FASTRAMQPI__AUTH_SERVER: "http://keycloak:8080/auth"
       FASTRAMQPI__AUTH_REALM: "mo"
+      # The MO AMQP system is no longer used for events (replaced by the GraphQL
+      # event system), but FastRAMQPI's integration-test fixtures still require
+      # AMQP connection settings to be present.
       FASTRAMQPI__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
       # Database
       FASTRAMQPI__DATABASE__USER: "fastramqpi"

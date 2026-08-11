@@ -34,7 +34,7 @@ MO_TZ = ZoneInfo("Europe/Copenhagen")
 
 # Kommunens administrative systemer
 UUID_85 = UUID("dbb1b318-3c85-11e3-9b6f-0050c2490048")
-# Etablering og udvikling af IT-systemer
+# Etablering og udvikling af it-systemer
 UUID_85_11 = UUID("b2d1f90f-eaf3-45b8-9340-dc2471d0a06b")
 # Administrative systemer
 UUID_85_11_06 = UUID("3fb6adba-6d89-4af0-af0b-728b51947a1f")
@@ -126,7 +126,7 @@ async def verify_synchronised(
                     facet_uuid=kle_number_facet,
                     uuid=UUID_85_11,
                     user_key="85.11",
-                    name="Etablering og udvikling af IT-systemer",
+                    name="Etablering og udvikling af it-systemer",
                     parent_uuid=UUID_85,
                 )
             ],
@@ -184,6 +184,8 @@ async def test_bad_update_resynchronisation(
         )
     )
 
+    # Editing the class in MO emits a `class` event, which the integration
+    # reacts to via the GraphQL event system and re-synchronises from FKK.
     await verify_synchronised()
 
 
@@ -261,7 +263,8 @@ async def test_delete(
         )
     )
 
-    # Verify that it is deleted from MO
+    # Creating the class in MO emits a `class` event, which the integration
+    # reacts to via the GraphQL event system and deletes, since it isn't in FKK.
     @retry(stop=stop_after_delay(120))
     async def verify() -> None:
         await assert_class(uuid, None)
@@ -271,17 +274,102 @@ async def test_delete(
 
 @pytest.mark.integration_test
 async def test_ignore_single_day(
-    test_client: AsyncClient, assert_class: AssertClass
+    test_client: AsyncClient,
+    fake_fkk_api: FakeFKKAPI,
+    assert_class: AssertClass,
 ) -> None:
     """Test that single-day validities are ignored.
 
-    MO does not support objects with a validity less than a day."""
+    MO does not support objects with a validity less than a day. There are no
+    single-day Klasser in FKK Test, so we must patch a made-up one into the FKK
+    API."""
     # This class starts 1988-01-01 and ends 1988-01-02.
-    uuid = UUID("339ed74a-b3e5-11e7-bfe9-0050c2490048")
+    uuid = UUID("11111111-1111-1111-1111-111111111111")
+    klasse_json = {
+        "uuid": str(uuid),
+        "attribut_egenskab": [
+            {
+                "virkning": {
+                    "fra": "1988-01-01T00:00:00+01:00",
+                    "til": "1988-01-02T00:00:00+01:00",
+                },
+                "brugervendtnoegle": "16.20.99",
+                "titel": "Single Day Test",
+            }
+        ],
+        "tilstand_publiceret": [
+            {
+                "virkning": {
+                    "fra": "1988-01-01T00:00:00+01:00",
+                    "til": "1988-01-02T00:00:00+01:00",
+                },
+                "er_publiceret": True,
+            }
+        ],
+        "relation_overordnet": [],
+    }
+    fake_fkk_api.fakes[uuid] = FKKKlasse.parse_obj(klasse_json)
 
     r = await test_client.post(f"/sync/{uuid}")
     assert r.json() == SyncStatus.UP_TO_DATE
     await assert_class(uuid, None)
+
+
+@pytest.mark.integration_test
+async def test_import_multi_day(
+    test_client: AsyncClient,
+    fake_fkk_api: FakeFKKAPI,
+    assert_class: AssertClass,
+    kle_number_facet: UUID,
+) -> None:
+    """Test that validities longer than a day are imported into MO.
+
+    Counterpart to `test_ignore_single_day`."""
+    # This class starts 2000-01-01 and ends 2005-01-01.
+    uuid = UUID("22222222-2222-2222-2222-222222222222")
+    klasse_json = {
+        "uuid": str(uuid),
+        "attribut_egenskab": [
+            {
+                "virkning": {
+                    "fra": "2000-01-01T00:00:00+00:00",
+                    "til": "2005-01-01T00:00:00+00:00",
+                },
+                "brugervendtnoegle": "16.20.98",
+                "titel": "Multi Day Test",
+            }
+        ],
+        "tilstand_publiceret": [
+            {
+                "virkning": {
+                    "fra": "2000-01-01T00:00:00+00:00",
+                    "til": "2005-01-01T00:00:00+00:00",
+                },
+                "er_publiceret": True,
+            }
+        ],
+        "relation_overordnet": [],
+    }
+    fake_fkk_api.fakes[uuid] = FKKKlasse.parse_obj(klasse_json)
+
+    r = await test_client.post(f"/sync/{uuid}")
+    assert r.json() == SyncStatus.CREATE_OR_UPDATE
+    await assert_class(
+        uuid,
+        [
+            GraphqlClassValidity(
+                validity=GraphqlValidity(
+                    from_=datetime(2000, 1, 1, 0, 0, tzinfo=MO_TZ),
+                    to=datetime(2005, 1, 1, 0, 0, tzinfo=MO_TZ),
+                ),
+                facet_uuid=kle_number_facet,
+                uuid=uuid,
+                user_key="16.20.98",
+                name="Multi Day Test",
+                parent_uuid=None,
+            )
+        ],
+    )
 
 
 @pytest.mark.integration_test
