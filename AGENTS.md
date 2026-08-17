@@ -7,9 +7,9 @@ SPDX-License-Identifier: MPL-2.0
 ## Context
 - This is an integration for the OS2mo application (https://github.com/OS2mo/os2mo) that runs as a separate docker-compose service.
 - This integration synchronises Klasser from Fælleskommunalt Klassifikationssystem (FKK) into OS2mo as classes under the `kle_number` facet.
-- This integration is event-driven:
-  - It periodically polls FKK for changed Klasser and emits FKK `change` events on its own AMQP system (`fkk_router`), which trigger synchronisation.
-  - It listens to `class` events from OS2mo via the GraphQL event system (`/events/mo/class`) so classes are re-synchronised whenever they change in MO.
+- This integration is event-driven and uses MO's GraphQL event system for all events:
+  - It periodically polls FKK for changed Klasser and sends FKK `change` events into its own `fkk` namespace on MO, which MO delivers back to `/events/fkk/change` to trigger synchronisation.
+  - It listens to `class` events from OS2mo (`/events/mo/class`) so classes are re-synchronised whenever they change in MO.
 
 ## Running Tests
 - Unit tests are in `tests/`, except for any sub-directories, like `tests/integration/`, which is for integration tests.
