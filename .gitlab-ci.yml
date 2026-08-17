@@ -81,6 +81,5 @@ Integration-test:
   rules:
     - <<: *if-merge-request
   variables:
-    FKK__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
     FKK__CERTIFICATE: "/builds/$CI_PROJECT_PATH/dev-environment/cert.pem"
     FKK__AUTHORITY_CONTEXT_CVR: "25052943"
