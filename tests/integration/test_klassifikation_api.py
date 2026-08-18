@@ -6,12 +6,13 @@ from unittest.mock import MagicMock
 
 import pytest
 from fastapi import FastAPI
+from httpx import AsyncClient
 
 from os2mo_fkk.klassifikation.api import FKKAPI
 
 
 @pytest.mark.integration_test
-async def test_read_error(app: FastAPI) -> None:
+async def test_read_error(test_client: AsyncClient, app: FastAPI) -> None:
     """Test that we handle FKK API errors during read.."""
     # Force status code 40000: "cvc-pattern-valid: Value 'illegal' is not facet-valid".
 
@@ -24,7 +25,7 @@ async def test_read_error(app: FastAPI) -> None:
 
 
 @pytest.mark.integration_test
-async def test_search_error(app: FastAPI) -> None:
+async def test_search_error(test_client: AsyncClient, app: FastAPI) -> None:
     """Test that we handle FKK API errors during search.."""
     # Force status code 48000: "The number of occurences to be returned must be
     # between 0 and 10000".

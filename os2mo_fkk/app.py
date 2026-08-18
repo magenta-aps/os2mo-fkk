@@ -1,7 +1,9 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 
+from contextlib import asynccontextmanager
 from typing import Any
+from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastramqpi.events import GraphQLEvents
@@ -57,33 +59,37 @@ def create_app() -> FastAPI:
     )
     fastramqpi.add_context(settings=settings)
 
-    # FKK API
-    fkk_api = FKKAPI(settings=settings.fkk)
-    fastramqpi.add_context(fkk_api=fkk_api)
+    @asynccontextmanager
+    async def lifespan() -> AsyncGenerator[None, None]:
+        context = fastramqpi.get_context()
 
-    # FKK event generator
-    fkk_event_generator = FKKEventGenerator(
-        settings=settings.fkk,
-        api=fkk_api,
-        graphql_client=fastramqpi.get_context()["graphql_client"],
-        sessionmaker=fastramqpi.get_context()["sessionmaker"],
-    )
+        # FKK API
+        fkk_api = FKKAPI(settings=settings.fkk)
+        fastramqpi.add_context(fkk_api=fkk_api)
 
-    # The event generator controls the dipex_last_success_timestamp metric
-    async def update_dipex_last_success_timestamp(_: Any) -> None:
-        last_run = await fkk_event_generator.get_last_run()
-        if last_run is None:
-            timestamp = 0.0
-        else:
-            timestamp = last_run.timestamp()
-        dipex_last_success_timestamp.set(timestamp)
+        # FKK event generator
+        fkk_event_generator = FKKEventGenerator(
+            settings=settings.fkk,
+            api=fkk_api,
+            graphql_client=context["graphql_client"],
+            sessionmaker=context["sessionmaker"],
+        )
 
-    fastramqpi.get_context()["instrumentator"].add(update_dipex_last_success_timestamp)
+        # The event generator controls the dipex_last_success_timestamp metric
+        async def update_dipex_last_success_timestamp(_: Any) -> None:
+            last_run = await fkk_event_generator.get_last_run()
+            if last_run is None:
+                timestamp = 0.0
+            else:
+                timestamp = last_run.timestamp()
+            dipex_last_success_timestamp.set(timestamp)
 
-    # Before the GraphQL event system
-    fastramqpi.add_lifespan_manager(fkk_api, priority=500)
-    # After the GraphQL event system
-    fastramqpi.add_lifespan_manager(fkk_event_generator, priority=1200)
+        context["instrumentator"].add(update_dipex_last_success_timestamp)
+
+        async with fkk_api, fkk_event_generator:
+            yield
+
+    fastramqpi.add_lifespan_manager(lifespan(), priority=2000)
 
     # FastAPI router
     app = fastramqpi.get_app()
