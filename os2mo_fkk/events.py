@@ -8,9 +8,6 @@ from uuid import UUID
 import structlog
 from fastapi import APIRouter
 from fastramqpi.events import Event
-from fastramqpi.ramqp import Router
-from fastramqpi.ramqp.depends import RateLimit
-from fastramqpi.ramqp.mo import PayloadUUID
 from more_itertools import one
 from more_itertools import only
 
@@ -25,7 +22,7 @@ from os2mo_fkk.models import mo_class_read_to_class_validities
 logger = structlog.stdlib.get_logger()
 
 mo_router = APIRouter()
-fkk_router = Router()
+fkk_router = APIRouter()
 
 
 @mo_router.post("/events/mo/class")
@@ -36,11 +33,14 @@ async def mo_class_event(
     await sync(event.subject, mo, fkk)
 
 
-@fkk_router.register("change")
-async def fkk_handler(
-    uuid: PayloadUUID, mo: depends.GraphQLClient, fkk: depends.FKKAPI, _: RateLimit
+@fkk_router.post("/events/fkk/change")
+async def fkk_change_event(
+    mo: depends.GraphQLClient,
+    fkk: depends.FKKAPI,
+    event: Event[UUID],
 ) -> None:
-    await sync(uuid, mo, fkk)
+    logger.info("Received FKK change event", fkk_event=event.dict())
+    await sync(event.subject, mo, fkk)
 
 
 class SyncStatus(StrEnum):

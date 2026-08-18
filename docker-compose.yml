@@ -47,7 +47,6 @@ services:
       FASTRAMQPI__DATABASE__HOST: "db"
       FASTRAMQPI__DATABASE__NAME: "fastramqpi"
       # FKK
-      FKK__AMQP__URL: "amqp://guest:guest@msg-broker:5672/"
       FKK__ENVIRONMENT: "test"
       # Only fetch klasser under ' Kommunens administrative systemer', otherwise
       # it takes forever to manually test.
