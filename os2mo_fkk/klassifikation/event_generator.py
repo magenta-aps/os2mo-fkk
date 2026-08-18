@@ -5,7 +5,6 @@ from contextlib import suppress
 from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
-from typing import Any
 from typing import AsyncContextManager
 from typing import Self
 
@@ -44,15 +43,13 @@ class FKKEventGenerator(AsyncContextManager):
         self,
         settings: FKKSettings,
         api: FKKAPI,
-        context: dict[str, Any],
+        graphql_client: GraphQLClient,
         sessionmaker: async_sessionmaker[AsyncSession],
     ) -> None:
         """Periodically poll FKK for new Klasser based on LastRun in the database."""
         self._settings = settings
         self._api = api
-        # The GraphQL client is only available in the context once FastRAMQPI's
-        # lifespan has set it up, so it is looked up lazily at generation time.
-        self._context = context
+        self._graphql_client = graphql_client
         self._sessionmaker = sessionmaker
         self._scheduler_task: asyncio.Task | None = None
 
@@ -87,7 +84,6 @@ class FKKEventGenerator(AsyncContextManager):
     async def _generate(self) -> None:
         """One event-generation iteration. Sends changed UUIDs since last run."""
         logger.info("Generating events")
-        graphql_client: GraphQLClient = self._context["graphql_client"]
         async with self._sessionmaker() as session, session.begin():
             # Get last run time from database
             last_run = await session.scalar(select(LastRun))
@@ -108,7 +104,7 @@ class FKKEventGenerator(AsyncContextManager):
             # Send changes into MO's event system, which delivers them back to
             # our `/events/fkk/change` handler to trigger synchronisation.
             send_tasks = [
-                graphql_client.send_event(
+                self._graphql_client.send_event(
                     EventSendInput(
                         namespace=FKK_NAMESPACE,
                         routing_key=FKK_ROUTING_KEY,

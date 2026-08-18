@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Any
-from typing import cast
 
 from fastapi import FastAPI
 from fastramqpi.events import GraphQLEvents
@@ -66,7 +65,7 @@ def create_app() -> FastAPI:
     fkk_event_generator = FKKEventGenerator(
         settings=settings.fkk,
         api=fkk_api,
-        context=cast(dict[str, Any], fastramqpi.get_context()),
+        graphql_client=fastramqpi.get_context()["graphql_client"],
         sessionmaker=fastramqpi.get_context()["sessionmaker"],
     )
 
